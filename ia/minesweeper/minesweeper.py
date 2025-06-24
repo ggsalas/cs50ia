@@ -110,7 +110,6 @@ class Sentence():
         else:
             return set()
 
-
     def known_safes(self):
         """
         Returns the set of all cells in self.cells known to be safe.
@@ -129,7 +128,6 @@ class Sentence():
             self.cells.remove(cell)
             self.count -= 1
 
-
     def mark_safe(self, cell):
         """
         Updates internal knowledge representation given the fact that
@@ -137,6 +135,7 @@ class Sentence():
         """
         if cell in self.cells:
             self.cells.remove(cell)
+
 
 class MinesweeperAI():
     """
@@ -164,7 +163,6 @@ class MinesweeperAI():
             for i in range(self.height):
                 self.all_cells.add((i, j))
         
-
     def mark_mine(self, cell):
         """
         Marks a cell as a mine, and updates all knowledge
@@ -183,7 +181,7 @@ class MinesweeperAI():
         for sentence in self.knowledge:
             sentence.mark_safe(cell)
 
-    ### remove empty sentences
+    # remove empty sentences
     def remove_empty(self):
         for sentence in self.knowledge:
             if len(sentence.cells) == 0:
@@ -210,21 +208,22 @@ class MinesweeperAI():
         # 2
         self.mark_safe(cell)
 
-        #3
+        # 3
         # calculate the neighboring_cells for each cell in the table
+        # TODO: should be a more efficient way to do this
         neighboring_cells = set()
-        for j in range(self.width): # horizontal
-            for i in range(self.height): # vertical
+        for j in range(self.width):  # horizontal
+            for i in range(self.height):  # vertical
                 current_cell = (i, j)
                 current_neighbors = set()
-                current_neighbors.add((i - 1, j)) # top
-                current_neighbors.add((i + 1, j)) # bottom
-                current_neighbors.add((i, j - 1)) # back
-                current_neighbors.add((i, j + 1)) # forward
-                current_neighbors.add((i - 1, j + 1)) # top-right
-                current_neighbors.add((i - 1, j - 1)) # top-left
-                current_neighbors.add((i + 1, j + 1)) # bottom-right
-                current_neighbors.add((i + 1, j - 1)) # bottom-left
+                current_neighbors.add((i - 1, j))  # top
+                current_neighbors.add((i + 1, j))  # bottom
+                current_neighbors.add((i, j - 1))  # back
+                current_neighbors.add((i, j + 1))  # forward
+                current_neighbors.add((i - 1, j + 1))  # top-right
+                current_neighbors.add((i - 1, j - 1))  # top-left
+                current_neighbors.add((i + 1, j + 1))  # bottom-right
+                current_neighbors.add((i + 1, j - 1))  # bottom-left
 
                 # if any of the neighboring_cells is the cell, 
                 # then is a neighbor
@@ -237,10 +236,11 @@ class MinesweeperAI():
         if neighboring_cells and len(neighboring_cells) > 0:
             self.knowledge.append(Sentence(neighboring_cells, count - len(mines_in_neighboring)))
 
+        # 4
         has_changed = True
         while has_changed:
             has_changed = False
-            #4
+
             # Mark safe
             if len(self.knowledge) > 0:
                 for sentence in self.knowledge:
@@ -258,7 +258,7 @@ class MinesweeperAI():
                             self.mark_mine(cell)
                             has_changed = True
 
-            #5
+            # 5
             infered_sentences = []
             if len(self.knowledge) > 0:
                 for sentence1 in self.knowledge:
@@ -268,7 +268,7 @@ class MinesweeperAI():
                                 cells = sentence2.cells.difference(sentence1.cells)
                                 count = sentence2.count - sentence1.count
                                 if len(cells) > 0:
-                                    new_sentence =  Sentence(cells, count)
+                                    new_sentence = Sentence(cells, count)
                                     if new_sentence not in self.knowledge:
                                         infered_sentences.append(Sentence(cells, count))
 
@@ -276,8 +276,9 @@ class MinesweeperAI():
                 if inf_sentence not in self.knowledge:
                     self.knowledge.append(inf_sentence)
                     has_changed = True
-            self.remove_empty()
 
+            # Clean
+            self.remove_empty()
 
     def make_safe_move(self):
         """
@@ -288,9 +289,7 @@ class MinesweeperAI():
         This function may use the knowledge in self.mines, self.safes
         and self.moves_made, but should not modify any of those values.
         """
-        safe_move = next(iter(self.safes.difference(self.moves_made)), None)
-        return safe_move
-
+        return next(iter(self.safes.difference(self.moves_made)), None)
 
     def make_random_move(self):
         """
@@ -299,5 +298,4 @@ class MinesweeperAI():
             1) have not already been chosen, and
             2) are not known to be mines
         """
-        random_move = next(iter(self.all_cells.difference(self.mines, self.moves_made)), None)
-        return random_move
+        return next(iter(self.all_cells.difference(self.mines, self.moves_made)), None)
