@@ -1,3 +1,5 @@
+# Ed help to debug: https://edstem.org/us/courses/176/discussion/4305755?answer=9951322
+
 from minesweeper import MinesweeperAI
 
 def print_ai_status():
@@ -61,8 +63,6 @@ ai.add_knowledge(move,nearby_count)
 move, nearby_count = (5,2), 1
 ai.add_knowledge(move,nearby_count)
 print_ai_status()
-
-
 
 # After move:(5, 2) with nearby_count:1
 # Sentences in Knowledge Base:
