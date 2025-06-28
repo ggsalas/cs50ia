@@ -6,19 +6,28 @@ import sys
 DAMPING = 0.85
 SAMPLES = 10000
 
+example_corpus = {
+    "1.html": {"2.html", "3.html"}, 
+    "2.html": {"3.html"}, 
+    "3.html": {"2.html"}
+}
 
 def main():
     if len(sys.argv) != 2:
         sys.exit("Usage: python pagerank.py corpus")
     corpus = crawl(sys.argv[1])
-    ranks = sample_pagerank(corpus, DAMPING, SAMPLES)
-    print(f"PageRank Results from Sampling (n = {SAMPLES})")
-    for page in sorted(ranks):
-        print(f"  {page}: {ranks[page]:.4f}")
-    ranks = iterate_pagerank(corpus, DAMPING)
-    print(f"PageRank Results from Iteration")
-    for page in sorted(ranks):
-        print(f"  {page}: {ranks[page]:.4f}")
+    print(transition_model(example_corpus, '1.html', DAMPING))
+    print(transition_model(example_corpus, '2.html', DAMPING))
+    print(transition_model(example_corpus, '3.html', DAMPING))
+
+    # ranks = sample_pagerank(corpus, DAMPING, SAMPLES)
+    # print(f"PageRank Results from Sampling (n = {SAMPLES})")
+    # for page in sorted(ranks):
+    #     print(f"  {page}: {ranks[page]:.4f}")
+    # ranks = iterate_pagerank(corpus, DAMPING)
+    # print(f"PageRank Results from Iteration")
+    # for page in sorted(ranks):
+    #     print(f"  {page}: {ranks[page]:.4f}")
 
 
 def crawl(directory):
@@ -57,7 +66,28 @@ def transition_model(corpus, page, damping_factor):
     linked to by `page`. With probability `1 - damping_factor`, choose
     a link at random chosen from all pages in the corpus.
     """
-    raise NotImplementedError
+    t_model = {}
+    visit_count = {}
+    
+    # add all pages in the corpus with 0 count
+    for pag in corpus:
+        visit_count[pag] = 0
+
+    # addition +1 for each link
+    for _, links in corpus.items():
+        for link in links:
+            visit_count[link] += 1
+
+    def calculate_probability_distribution(visits):
+        no_visited_value = (1 - damping_factor) / len(corpus)
+        visited_value = damping_factor / visits if visits > 0 else 0
+
+        return visited_value + no_visited_value
+
+    for pag, visits in visit_count.items():
+        t_model[pag] = calculate_probability_distribution(visits)
+
+    return t_model[page]
 
 
 def sample_pagerank(corpus, damping_factor, n):
