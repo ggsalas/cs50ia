@@ -99,7 +99,14 @@ class CrosswordCreator():
         (Remove any values that are inconsistent with a variable's unary
          constraints; in this case, the length of the word.)
         """
-        raise NotImplementedError
+        for x, domain in self.domains.items():
+            length = x.length
+            new_domain = set()
+            for word in domain:
+                if (len(word) == length):
+                    new_domain.add(word)
+            self.domains[x] = new_domain
+
 
     def revise(self, x, y):
         """
@@ -109,8 +116,41 @@ class CrosswordCreator():
 
         Return True if a revision was made to the domain of `x`; return
         False if no revision was made.
+
+        It sounds like you have a good understanding of the process! 
+        Checking if x and y overlap is a great first step. 
+        If they do overlap, you can then check if the words in their domains have consistent letters at the overlapping positions. 
+        If a word in the domain of x has a different letter at the overlapping position than any word in the domain of y, 
+            you should remove that word from the domain of x.
         """
-        raise NotImplementedError
+
+        """
+        #six#
+        #e##f
+        #v##i
+        #e##v
+        #nine
+        """
+
+        x_neighbors = self.crossword.neighbors(x)
+        for neighbor in x_neighbors:
+            if neighbor == y:
+                # returned as (position for first var, position for second var)
+                overlaps = self.crossword.overlaps[x, neighbor]
+                x_overlap = overlaps[0]
+                y_overlap = overlaps[1]
+                new_x_domain = self.domains[x].copy()
+                for x_domain in self.domains[x]:
+                    x_overlap_letter = x_domain[x_overlap]
+                    some_y_domain_matches_with_x_domain = False
+                    for y_domain in self.domains[y]:
+                        y_overlap_letter = y_domain[y_overlap]
+                        if x_overlap_letter == y_overlap_letter:
+                            some_y_domain_matches_with_x_domain = True
+                    if some_y_domain_matches_with_x_domain == False:
+                        new_x_domain.remove(x_domain)
+                self.domains[x] = new_x_domain
+
 
     def ac3(self, arcs=None):
         """
@@ -121,6 +161,26 @@ class CrosswordCreator():
         Return True if arc consistency is enforced and no domains are empty;
         return False if one or more domains end up empty.
         """
+        abajo = Variable(4, 1, 'across', 4)
+        arriba = Variable(0, 1, 'across', 3)
+        izquierda = Variable(0, 1, 'down', 5)
+        derecha = Variable(1, 4, 'down', 4)
+        abajo_domain = self.domains[abajo]
+        arriba_domain = self.domains[arriba]
+        izquierda_domain = self.domains[izquierda]
+        derecha_domain = self.domains[derecha]
+
+        """
+        arriba = {'ONE', 'TEN', 'SIX', 'TWO'} 
+        izquierda = {'EIGHT', 'THREE', 'SEVEN'}
+
+        the corect behavior of the revise function will be modify arriba var to be: 
+        {'TEN', 'SIX', 'TWO'} ?
+        """
+        print('### arriba, izquierda', arriba_domain, izquierda_domain)
+        self.revise(arriba, izquierda)
+        print('### After revise(arriba, izquierda)', self.domains[arriba], self.domains[izquierda])
+
         raise NotImplementedError
 
     def assignment_complete(self, assignment):
