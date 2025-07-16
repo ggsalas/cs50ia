@@ -91,6 +91,10 @@ class CrosswordCreator():
         """
         self.enforce_node_consistency()
         self.ac3()
+        
+        for var, domain in self.domains.items():
+            print(var, '---', domain)
+
         return self.backtrack(dict())
 
     def enforce_node_consistency(self):
@@ -123,15 +127,7 @@ class CrosswordCreator():
         If a word in the domain of x has a different letter at the overlapping position than any word in the domain of y, 
             you should remove that word from the domain of x.
         """
-
-        """
-        #six#
-        #e##f
-        #v##i
-        #e##v
-        #nine
-        """
-
+        revision_made = False
         x_neighbors = self.crossword.neighbors(x)
         for neighbor in x_neighbors:
             if neighbor == y:
@@ -147,9 +143,12 @@ class CrosswordCreator():
                         y_overlap_letter = y_domain[y_overlap]
                         if x_overlap_letter == y_overlap_letter:
                             some_y_domain_matches_with_x_domain = True
+
                     if some_y_domain_matches_with_x_domain == False:
                         new_x_domain.remove(x_domain)
+                        revision_made = True
                 self.domains[x] = new_x_domain
+        return revision_made
 
 
     def ac3(self, arcs=None):
@@ -161,27 +160,66 @@ class CrosswordCreator():
         Return True if arc consistency is enforced and no domains are empty;
         return False if one or more domains end up empty.
         """
-        abajo = Variable(4, 1, 'across', 4)
-        arriba = Variable(0, 1, 'across', 3)
-        izquierda = Variable(0, 1, 'down', 5)
-        derecha = Variable(1, 4, 'down', 4)
-        abajo_domain = self.domains[abajo]
-        arriba_domain = self.domains[arriba]
-        izquierda_domain = self.domains[izquierda]
-        derecha_domain = self.domains[derecha]
 
         """
-        arriba = {'ONE', 'TEN', 'SIX', 'TWO'} 
-        izquierda = {'EIGHT', 'THREE', 'SEVEN'}
-
-        the corect behavior of the revise function will be modify arriba var to be: 
-        {'TEN', 'SIX', 'TWO'} ?
+        #six#
+        #e##f
+        #v##i
+        #e##v
+        #nine
         """
-        print('### arriba, izquierda', arriba_domain, izquierda_domain)
-        self.revise(arriba, izquierda)
-        print('### After revise(arriba, izquierda)', self.domains[arriba], self.domains[izquierda])
 
-        raise NotImplementedError
+        all_arcs = list()
+        for x in self.domains:
+            neighbors = self.crossword.neighbors(x)
+            for neighbor in neighbors:
+                all_arcs.append((x, neighbor))
+        # TODO: remove
+        # for arc in all_arcs:
+        #     print(arc)
+
+        if arcs == None:
+            arcs = all_arcs
+
+        while len(arcs) != 0:
+            for arc in arcs:
+                x = arc[0]
+                y = arc[1]
+                arcs.remove(arc)
+                rev = self.revise(x, y)
+
+                if rev:
+                    # if a revision has been made
+                    # add x neighbors to the queue to ensure arc consistency with new x domain
+                    for z in self.crossword.neighbors(x):
+                        arcs.append((z, x))
+                else:
+                    # if no revision has been made
+                    # check if x domain is empty, means there is no solution possible
+                    if len(self.domains[x]) == 0:
+                        return False
+        return True
+
+        # TODO: remove
+        # abajo = Variable(4, 1, 'across', 4)
+        # arriba = Variable(0, 1, 'across', 3)
+        # izquierda = Variable(0, 1, 'down', 5)
+        # derecha = Variable(1, 4, 'down', 4)
+        # abajo_domain = self.domains[abajo]
+        # arriba_domain = self.domains[arriba]
+        # izquierda_domain = self.domains[izquierda]
+        # derecha_domain = self.domains[derecha]
+        #
+        # """
+        # arriba = {'ONE', 'TEN', 'SIX', 'TWO'} 
+        # izquierda = {'EIGHT', 'THREE', 'SEVEN'}
+        #
+        # the corect behavior of the revise function will be modify arriba var to be: 
+        # {'TEN', 'SIX', 'TWO'} ?
+        # """
+        # print('### abajo, derecha', abajo_domain, izquierda_domain)
+        # self.revise(abajo, izquierda)
+        # print('### After revise(arriba, izquierda)', self.domains[abajo], self.domains[izquierda])
 
     def assignment_complete(self, assignment):
         """
