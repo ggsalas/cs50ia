@@ -95,7 +95,13 @@ class CrosswordCreator():
         # TODO: remove
         for var, domain in self.domains.items():
             print(var, '---', domain)
-        isC = self.assignment_complete(self.domains)
+
+        assignment = {}
+        for var, domain in self.domains.items():
+            assignment[var] = list(domain)[0]
+
+        # print('assignment: ', assignment)
+        isC = self.assignment_complete(assignment)
         if isC == True:
             print('is complete')
         else:
@@ -232,11 +238,15 @@ class CrosswordCreator():
         """
         Return True if `assignment` is complete (i.e., assigns a value to each
         crossword variable); return False otherwise.
+
+        > assignment is a dictionary of Variable: word, not a set of words
+        it assume that each variable has a single word
         """
         is_complete = True
-        for _, domain in assignment.items():
-            if len(domain) != 1:
+        for x, _ in self.domains.items():
+            if not assignment[x]:
                 is_complete = False
+
         return is_complete
 
     def consistent(self, assignment):
