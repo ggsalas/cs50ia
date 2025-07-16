@@ -92,8 +92,15 @@ class CrosswordCreator():
         self.enforce_node_consistency()
         self.ac3()
         
+        # TODO: remove
         for var, domain in self.domains.items():
             print(var, '---', domain)
+        isC = self.assignment_complete(self.domains)
+        if isC == True:
+            print('is complete')
+        else:
+            print('is NOT complete')
+        ###
 
         return self.backtrack(dict())
 
@@ -226,7 +233,11 @@ class CrosswordCreator():
         Return True if `assignment` is complete (i.e., assigns a value to each
         crossword variable); return False otherwise.
         """
-        raise NotImplementedError
+        is_complete = True
+        for _, domain in assignment.items():
+            if len(domain) != 1:
+                is_complete = False
+        return is_complete
 
     def consistent(self, assignment):
         """
