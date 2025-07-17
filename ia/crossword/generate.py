@@ -101,7 +101,7 @@ class CrosswordCreator():
             assignment[var] = list(domain)[0]
 
         # print('assignment: ', assignment)
-        isC = self.assignment_complete(assignment)
+        isC = self.consistent(assignment)
         if isC == True:
             print('is complete')
         else:
@@ -253,8 +253,48 @@ class CrosswordCreator():
         """
         Return True if `assignment` is consistent (i.e., words fit in crossword
         puzzle without conflicting characters); return False otherwise.
+
+        1. all variables are present in the assignment
+        2. satisfy all other constrain problem: 
+            - all values are distinct, 
+            - every value is the correct length
+            - there are no conflicts between neighboring variables.
         """
-        raise NotImplementedError
+
+        all_x_present = self.assignment_complete(assignment)
+
+        all_x_distinct = True
+        for i in assignment:
+            for j in assignment:
+                if (j == i):
+                    all_x_distinct = False
+
+        all_x_length = True
+        for x, val in assignment.items():
+            if (len(val) != x.length):
+                all_x_length = False
+
+        no_neighboring_conflicts = True
+        for x, x_val in assignment.items():
+            x_neighbors = self.crossword.neighbors(x)
+            for n in x_neighbors:
+                    # returned as (position for first var, position for second var)
+                    overlaps = self.crossword.overlaps[x, n]
+                    x_overlap = overlaps[0]
+                    n_overlap = overlaps[1]
+                    n_val = assignment[n]
+                    x_overlap_letter = x_val[x_overlap]
+                    n_overlap_letter = n_val[n_overlap]
+                    if (x_overlap_letter != n_overlap_letter):
+                        no_neighboring_conflicts = True
+
+        if (all_x_present and all_x_distinct and all_x_length and no_neighboring_conflicts):
+            return True
+        else:
+            # TODO: remove
+            # print(f"all_x_present: {all_x_present} - all_x_distinct: {all_x_distinct} - all_x_length: {all_x_length} - no_neighboring_conflicts: {no_neighboring_conflicts} ")
+            return False
+                    
 
     def order_domain_values(self, var, assignment):
         """
@@ -263,7 +303,18 @@ class CrosswordCreator():
         The first value in the list, for example, should be the one
         that rules out the fewest values among the neighbors of `var`.
         """
-        raise NotImplementedError
+        # TODO: It may be helpful to first implement this function by returning
+        # a list of values in any arbitrary order (which should still generate
+        # correct crossword puzzles). Once your algorithm is working, you can
+        # then go back and ensure that the values are returned in the correct
+        # order.
+        #
+        # Ordering later...
+        
+        vars = self.domains[var].copy()
+        vars.remove(assignment[var])
+
+        return vars
 
     def select_unassigned_variable(self, assignment):
         """
