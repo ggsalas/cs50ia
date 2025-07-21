@@ -323,8 +323,29 @@ class CrosswordCreator():
         in its domain. If there is a tie, choose the variable with the highest
         degree. If there is a tie, any of the tied variables are acceptable
         return values.
+
+        - return the variable with the fewest number of remaining values in its domain
+        - whichever among those variables has the largest degree (has the most neighbors)
+        - choose arbitrarily among tied variables
+
+        * It may be helpful to first implement this function by returning any arbitrary unassigned variable 
+          (which should still generate correct crossword puzzles). Once your algorithm is working, 
+          you can then go back and ensure that you are returning a variable according to the heuristics.
+
+          You may find it helpful to sort a list according to a particular key
         """
-        raise NotImplementedError
+        unassigned_vars = list()
+        for x_domain, _ in self.domains.items():
+            is_in_assignment = False
+            for x_assignment, _ in assignment.items():
+                if x_assignment == x_domain:
+                    is_in_assignment = True
+            unassigned_vars.append(x_domain)
+
+        # TODO: order by fewest number of values in domain
+
+        # TODO: order by most neighbors, or random
+
 
     def backtrack(self, assignment):
         """
