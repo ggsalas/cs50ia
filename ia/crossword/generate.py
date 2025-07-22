@@ -93,20 +93,20 @@ class CrosswordCreator():
         self.ac3()
         
         # TODO: remove
-        for var, domain in self.domains.items():
-            print(var, '---', domain)
-
-        assignment = {}
-        for var, domain in self.domains.items():
-            assignment[var] = list(domain)[0]
-
-        # print('assignment: ', assignment)
-        isC = self.consistent(assignment)
-        if isC == True:
-            print('is complete')
-        else:
-            print('is NOT complete')
-        ###
+        # for var, domain in self.domains.items():
+        #     print(var, '---', domain)
+        #
+        # assignment = {}
+        # for var, domain in self.domains.items():
+        #     assignment[var] = list(domain)[0]
+        #
+        # # print('assignment: ', assignment)
+        # isC = self.consistent(assignment)
+        # if isC == True:
+        #     print('is complete')
+        # else:
+        #     print('is NOT complete')
+        # ###
 
         return self.backtrack(dict())
 
@@ -244,7 +244,7 @@ class CrosswordCreator():
         """
         is_complete = True
         for x, _ in self.domains.items():
-            if not assignment[x]:
+            if x not in assignment:
                 is_complete = False
 
         return is_complete
@@ -253,20 +253,12 @@ class CrosswordCreator():
         """
         Return True if `assignment` is consistent (i.e., words fit in crossword
         puzzle without conflicting characters); return False otherwise.
-
-        1. all variables are present in the assignment
-        2. satisfy all other constrain problem: 
-            - all values are distinct, 
-            - every value is the correct length
-            - there are no conflicts between neighboring variables.
         """
 
-        all_x_present = self.assignment_complete(assignment)
-
         all_x_distinct = True
-        for i in assignment:
-            for j in assignment:
-                if (j == i):
+        for i, i_value in assignment.items():
+            for j, j_value in assignment.items():
+                if (i_value == j_value and i != j):
                     all_x_distinct = False
 
         all_x_length = True
@@ -282,17 +274,16 @@ class CrosswordCreator():
                     overlaps = self.crossword.overlaps[x, n]
                     x_overlap = overlaps[0]
                     n_overlap = overlaps[1]
-                    n_val = assignment[n]
-                    x_overlap_letter = x_val[x_overlap]
-                    n_overlap_letter = n_val[n_overlap]
-                    if (x_overlap_letter != n_overlap_letter):
-                        no_neighboring_conflicts = True
+                    if n in assignment:
+                        n_val = assignment[n]
+                        x_overlap_letter = x_val[x_overlap]
+                        n_overlap_letter = n_val[n_overlap]
+                        if (x_overlap_letter != n_overlap_letter):
+                            no_neighboring_conflicts = False
 
-        if (all_x_present and all_x_distinct and all_x_length and no_neighboring_conflicts):
+        if (all_x_distinct and all_x_length and no_neighboring_conflicts):
             return True
         else:
-            # TODO: remove
-            # print(f"all_x_present: {all_x_present} - all_x_distinct: {all_x_distinct} - all_x_length: {all_x_length} - no_neighboring_conflicts: {no_neighboring_conflicts} ")
             return False
                     
 
@@ -312,7 +303,8 @@ class CrosswordCreator():
         # Ordering later...
         
         vars = self.domains[var].copy()
-        vars.remove(assignment[var])
+        if var in vars:
+            vars.remove(assignment[var])
 
         return vars
 
@@ -335,17 +327,21 @@ class CrosswordCreator():
           You may find it helpful to sort a list according to a particular key
         """
         unassigned_vars = list()
-        for x_domain, _ in self.domains.items():
-            is_in_assignment = False
-            for x_assignment, _ in assignment.items():
-                if x_assignment == x_domain:
-                    is_in_assignment = True
-            unassigned_vars.append(x_domain)
+        # for x_domain, _ in self.domains.items():
+        #     is_in_assignment = False
+        #     for x_assignment, _ in assignment.items():
+        #         if x_assignment == x_domain:
+        #             is_in_assignment = True
+        #     unassigned_vars.append(x_domain)
+        for x, _ in self.domains.items():
+            if x not in assignment:
+                unassigned_vars.append(x)
 
         # TODO: order by fewest number of values in domain
 
         # TODO: order by most neighbors, or random
 
+        return unassigned_vars[0]
 
     def backtrack(self, assignment):
         """
@@ -356,7 +352,24 @@ class CrosswordCreator():
 
         If no assignment is possible, return None.
         """
-        raise NotImplementedError
+
+        is_complete = self.assignment_complete(assignment)
+        if is_complete == True:
+            return assignment
+
+        x = self.select_unassigned_variable(assignment)
+        for value in self.order_domain_values(x, assignment):
+            new_assignment = assignment.copy()
+            new_assignment[x] = value
+            if self.consistent(new_assignment): 
+                assignment[x] = value
+                result = self.backtrack(assignment)
+                if result != False:
+                    return result
+                else: 
+                    assignment.remove(x)
+                    return False
+        return None
 
 
 def main():
