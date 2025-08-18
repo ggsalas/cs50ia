@@ -92,22 +92,6 @@ class CrosswordCreator():
         self.enforce_node_consistency()
         self.ac3()
         
-        # TODO: remove
-        # for var, domain in self.domains.items():
-        #     print(var, '---', domain)
-        #
-        # assignment = {}
-        # for var, domain in self.domains.items():
-        #     assignment[var] = list(domain)[0]
-        #
-        # # print('assignment: ', assignment)
-        # isC = self.consistent(assignment)
-        # if isC == True:
-        #     print('is complete')
-        # else:
-        #     print('is NOT complete')
-        # ###
-
         return self.backtrack(dict())
 
     def enforce_node_consistency(self):
@@ -173,23 +157,11 @@ class CrosswordCreator():
         Return True if arc consistency is enforced and no domains are empty;
         return False if one or more domains end up empty.
         """
-
-        """
-        #six#
-        #e##f
-        #v##i
-        #e##v
-        #nine
-        """
-
         all_arcs = list()
         for x in self.domains:
             neighbors = self.crossword.neighbors(x)
             for neighbor in neighbors:
                 all_arcs.append((x, neighbor))
-        # TODO: remove
-        # for arc in all_arcs:
-        #     print(arc)
 
         if arcs == None:
             arcs = all_arcs
@@ -212,27 +184,6 @@ class CrosswordCreator():
                     if len(self.domains[x]) == 0:
                         return False
         return True
-
-        # TODO: remove
-        # abajo = Variable(4, 1, 'across', 4)
-        # arriba = Variable(0, 1, 'across', 3)
-        # izquierda = Variable(0, 1, 'down', 5)
-        # derecha = Variable(1, 4, 'down', 4)
-        # abajo_domain = self.domains[abajo]
-        # arriba_domain = self.domains[arriba]
-        # izquierda_domain = self.domains[izquierda]
-        # derecha_domain = self.domains[derecha]
-        #
-        # """
-        # arriba = {'ONE', 'TEN', 'SIX', 'TWO'} 
-        # izquierda = {'EIGHT', 'THREE', 'SEVEN'}
-        #
-        # the corect behavior of the revise function will be modify arriba var to be: 
-        # {'TEN', 'SIX', 'TWO'} ?
-        # """
-        # print('### abajo, derecha', abajo_domain, izquierda_domain)
-        # self.revise(abajo, izquierda)
-        # print('### After revise(arriba, izquierda)', self.domains[abajo], self.domains[izquierda])
 
     def assignment_complete(self, assignment):
         """
@@ -293,20 +244,47 @@ class CrosswordCreator():
         the number of values they rule out for neighboring variables.
         The first value in the list, for example, should be the one
         that rules out the fewest values among the neighbors of `var`.
-        """
-        # TODO: It may be helpful to first implement this function by returning
-        # a list of values in any arbitrary order (which should still generate
-        # correct crossword puzzles). Once your algorithm is working, you can
-        # then go back and ensure that the values are returned in the correct
-        # order.
-        #
-        # Ordering later...
-        
-        vars = self.domains[var].copy()
-        if var in vars:
-            vars.remove(assignment[var])
 
-        return vars
+        least-constraining values heuristics
+            - number of values ruled out for neighboring unassigned variables
+        """
+        neighbors = self.crossword.neighbors(var)
+
+        unassigned_neighbors = list()
+        for x in neighbors:
+            if x not in assignment:
+                unassigned_neighbors.append(x)
+
+
+        count_n_ruled_out_values = dict()
+        for value in self.domains[var]:
+            count_n_ruled_out_values[value] = 0
+
+        # count the neighbor out values per each value
+        for value in self.domains[var]:
+            for neighbor in unassigned_neighbors:
+                    # calculate the overlap of each neighbor and the var
+                    overlaps = self.crossword.overlaps[var, neighbor]
+                    var_overlap = overlaps[0]
+                    neighbor_overlap = overlaps[1]
+                    # calculate the overlap letter for each value in neighbor domain
+                    for n_value in self.domains[neighbor]:
+                        var_overlap_letter = value[var_overlap]
+                        neighbor_overlap_letter = n_value[neighbor_overlap]
+                        # If the overlap letter do not match, this word can be ruled out
+                        if var_overlap_letter != neighbor_overlap_letter:
+                            count_n_ruled_out_values[value] += 1
+
+        def get_value(item):
+            value = item[1]
+            return (value == 0, value)
+
+        sorted_items = sorted(count_n_ruled_out_values.items(), key=get_value)
+        sorted_keys = list()
+        for key, _ in sorted_items:
+            sorted_keys.append(key)
+
+        return sorted_keys
 
     def select_unassigned_variable(self, assignment):
         """
@@ -315,33 +293,26 @@ class CrosswordCreator():
         in its domain. If there is a tie, choose the variable with the highest
         degree. If there is a tie, any of the tied variables are acceptable
         return values.
-
-        - return the variable with the fewest number of remaining values in its domain
-        - whichever among those variables has the largest degree (has the most neighbors)
-        - choose arbitrarily among tied variables
-
-        * It may be helpful to first implement this function by returning any arbitrary unassigned variable 
-          (which should still generate correct crossword puzzles). Once your algorithm is working, 
-          you can then go back and ensure that you are returning a variable according to the heuristics.
-
-          You may find it helpful to sort a list according to a particular key
         """
-        unassigned_vars = list()
-        # for x_domain, _ in self.domains.items():
-        #     is_in_assignment = False
-        #     for x_assignment, _ in assignment.items():
-        #         if x_assignment == x_domain:
-        #             is_in_assignment = True
-        #     unassigned_vars.append(x_domain)
+        u_vars = list()
         for x, _ in self.domains.items():
             if x not in assignment:
-                unassigned_vars.append(x)
+                u_vars.append(x)
 
-        # TODO: order by fewest number of values in domain
+        # order by fewest number of values in domain
+        # and less neighbors
+        u_vars_domain_count = dict()
+        for x in u_vars:
+            u_vars_domain_count[x] = (len(self.domains[x]), len(self.crossword.neighbors(x)))
 
-        # TODO: order by most neighbors, or random
+        def get_value(item):
+            domain_count = item[1][0]
+            neighbors_count = item[1][1]
+            return (domain_count, neighbors_count)
+        u_vars_domain_ordered = sorted(u_vars_domain_count.items(), key=get_value)
 
-        return unassigned_vars[0]
+        return u_vars_domain_ordered[0][0]
+
 
     def backtrack(self, assignment):
         """
