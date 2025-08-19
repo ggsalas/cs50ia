@@ -1,11 +1,10 @@
 import csv
 import sys
 
-# from sklearn.model_selection import train_test_split
-# from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
 
 TEST_SIZE = 0.4
-
 
 def main():
 
@@ -15,22 +14,20 @@ def main():
 
     # Load data from spreadsheet and split into train and test sets
     evidence, labels = load_data(sys.argv[1])
-    print('evidence: ', evidence)
-    print('labels: ', labels)
-    # X_train, X_test, y_train, y_test = train_test_split(
-    #     evidence, labels, test_size=TEST_SIZE
-    # )
-    #
-    # # Train model and make predictions
-    # model = train_model(X_train, y_train)
-    # predictions = model.predict(X_test)
-    # sensitivity, specificity = evaluate(y_test, predictions)
-    #
-    # # Print results
-    # print(f"Correct: {(y_test == predictions).sum()}")
-    # print(f"Incorrect: {(y_test != predictions).sum()}")
-    # print(f"True Positive Rate: {100 * sensitivity:.2f}%")
-    # print(f"True Negative Rate: {100 * specificity:.2f}%")
+    X_train, X_test, y_train, y_test = train_test_split(
+        evidence, labels, test_size=TEST_SIZE
+    )
+
+    # Train model and make predictions
+    model = train_model(X_train, y_train)
+    predictions = model.predict(X_test)
+    sensitivity, specificity = evaluate(y_test, predictions)
+
+    # Print results
+    print(f"Correct: {(y_test == predictions).sum()}")
+    print(f"Incorrect: {(y_test != predictions).sum()}")
+    print(f"True Positive Rate: {100 * sensitivity:.2f}%")
+    print(f"True Negative Rate: {100 * specificity:.2f}%")
 
 
 def load_data(filename):
@@ -61,7 +58,7 @@ def load_data(filename):
     labels should be the corresponding list of labels, where each label
     is 1 if Revenue is true, and 0 otherwise.
     """
-    month_map = { "Jan": 0, "Feb": 1, "Mar": 2, "Apr": 3, "May": 4, "Jun": 5, "Jul": 6, "Aug": 7, "Sep": 8, "Oct": 9, "Nov": 10, "Dec": 11 }
+    month_map = { "Jan": 0, "Feb": 1, "Mar": 2, "Apr": 3, "May": 4, "June": 5, "Jul": 6, "Aug": 7, "Sep": 8, "Oct": 9, "Nov": 10, "Dec": 11 }
     evidence = list()
     labels = list()
 
@@ -92,13 +89,14 @@ def load_data(filename):
     return (evidence, labels)
 
 
-
 def train_model(evidence, labels):
     """
     Given a list of evidence lists and a list of labels, return a
     fitted k-nearest neighbor model (k=1) trained on the data.
     """
-    raise NotImplementedError
+    model = KNeighborsClassifier(n_neighbors = 1)
+    model.fit(evidence, labels)
+    return model
 
 
 def evaluate(labels, predictions):
@@ -116,7 +114,24 @@ def evaluate(labels, predictions):
     representing the "true negative rate": the proportion of
     actual negative labels that were accurately identified.
     """
-    raise NotImplementedError
+    sensitivity_count = 0
+    specificity_count = 0
+    positive_labels = 0
+    negative_labels = 0
+
+    for x in labels:
+        if x == 0:
+            negative_labels += 1
+        else:
+            positive_labels += 1
+
+    for x, y in zip(labels, predictions):
+        if x == 0 and y == 0:
+            specificity_count += 1
+        if x == 1 and y == 1:
+            sensitivity_count += 1
+
+    return (sensitivity_count / negative_labels, specificity_count / positive_labels)
 
 
 if __name__ == "__main__":
