@@ -53,6 +53,7 @@ class Nim():
         """
         pile, count = action
 
+        print('move pile: ', pile)
         # Check for errors
         if self.winner is not None:
             raise Exception("Game already won")
@@ -104,7 +105,7 @@ class NimAI():
         if len(self.q) == 0:
             return 0
 
-        return self.q.get((state, action), 0)
+        return self.q.get((tuple(state), action), 0)
 
 
     def update_q_value(self, state, action, old_q, reward, future_rewards):
@@ -126,7 +127,7 @@ class NimAI():
         new_value_estimate = reward + future_rewards
         new_q = old_q + alpha * (new_value_estimate - old_q)
 
-        self.q[state, action] = new_q
+        self.q[tuple(state), action] = new_q
 
 
     def best_future_reward(self, state):
@@ -144,10 +145,12 @@ class NimAI():
         for pile in state:
             for i in range(pile):
                 action = (pile, i)
-                q_val = self.q.get((state, action), 0)
+                q_val = self.q.get((tuple(state), action), 0)
                 q_values.append(q_val)
 
-        return max(q_values)
+        if len(q_values) > 0: 
+            return max(q_values)
+        return 0
 
 
     def choose_action(self, state, epsilon=True):
@@ -165,7 +168,24 @@ class NimAI():
         If multiple actions have the same Q-value, any of those
         options is an acceptable return value.
         """
-        raise NotImplementedError
+        # (action, q_val) list
+        actions = []
+
+        for i, pile in enumerate(state):
+            for j in range(1, pile + 1):
+                action = (i, j)
+                q_val = self.q.get((tuple(state), action), 0)
+                actions.append((action, q_val))
+
+        if epsilon:
+            if random.random() < epsilon:
+                choice = random.choice(actions)
+                return choice[0]
+
+        max_action = max(actions, key=lambda x: x[1])
+
+        return max_action[0]
+
 
 
 def train(n):
