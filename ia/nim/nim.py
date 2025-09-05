@@ -142,9 +142,9 @@ class NimAI():
         """
 
         q_values = []
-        for pile in state:
-            for i in range(pile):
-                action = (pile, i)
+        for i, pile in enumerate(state):
+            for j in range(1, pile + 1):
+                action = (i, j)
                 q_val = self.q.get((tuple(state), action), 0)
                 q_values.append(q_val)
 
@@ -178,7 +178,7 @@ class NimAI():
                 actions.append((action, q_val))
 
         if epsilon:
-            if random.random() < epsilon:
+            if random.random() < self.epsilon:
                 choice = random.choice(actions)
                 return choice[0]
 
