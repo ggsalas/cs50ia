@@ -107,7 +107,6 @@ class NimAI():
 
         return self.q.get((tuple(state), action), 0)
 
-
     def update_q_value(self, state, action, old_q, reward, future_rewards):
         """
         Update the Q-value for the state `state` and the action `action`
@@ -129,7 +128,6 @@ class NimAI():
 
         self.q[tuple(state), action] = new_q
 
-
     def best_future_reward(self, state):
         """
         Given a state `state`, consider all possible `(state, action)`
@@ -148,10 +146,9 @@ class NimAI():
                 q_val = self.q.get((tuple(state), action), 0)
                 q_values.append(q_val)
 
-        if len(q_values) > 0: 
+        if len(q_values) > 0:
             return max(q_values)
         return 0
-
 
     def choose_action(self, state, epsilon=True):
         """
@@ -185,7 +182,6 @@ class NimAI():
         max_action = max(actions, key=lambda x: x[1])
 
         return max_action[0]
-
 
 
 def train(n):
