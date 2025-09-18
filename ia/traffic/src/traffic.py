@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import os
 import sys
+# pylint: disable=no-member
 import tensorflow as tf
 
 from sklearn.model_selection import train_test_split
@@ -21,8 +22,9 @@ def main():
 
     # Get image arrays and labels for all image files
     images, labels = load_data(sys.argv[1])
-    # images, labels = load_data('gtsrb/0')
-    # print(images, labels)
+    # images, labels = load_data(sys.argv[1])
+    # # load_data('gtsrb/0')
+    # print(images[0])
 
     # Split data into training and testing sets
     labels = tf.keras.utils.to_categorical(labels)
@@ -64,13 +66,18 @@ def load_data(data_dir):
     labels = []
 
     for root, _, files in os.walk(data_dir):
+        label = os.path.basename(root)
         for f in files:
             img_path = f"{root}/{f}"
             img = cv2.imread(img_path)
-            img_resized = cv2.resize(img, (IMG_WIDTH, IMG_HEIGHT))
 
-            images.append(img_resized)
-            labels.append(os.path.basename(root))
+            if img is not None:
+                img_resized = cv2.resize(img, (IMG_WIDTH, IMG_HEIGHT))
+
+                images.append(img_resized)
+                labels.append(label)
+            else:
+                print("error on load ", img_path)
 
     return (images, labels)
 
@@ -81,7 +88,35 @@ def get_model():
     `input_shape` of the first layer is `(IMG_WIDTH, IMG_HEIGHT, 3)`.
     The output layer should have `NUM_CATEGORIES` units, one for each category.
     """
-    raise NotImplementedError
+    model = tf.keras.models.Sequential([
+
+        # convolutional layer
+        tf.keras.layers.Conv2D(
+            32, (3, 3), activation="relu", input_shape=(IMG_WIDTH, IMG_HEIGHT, 3)
+        ),
+
+        # Max-pooling layer, using 2x2 pool size
+        tf.keras.layers.MaxPooling2D(pool_size=(3, 3)),
+
+        # Flatten units
+        tf.keras.layers.Flatten(),
+
+        # Add a hidden layer with dropout
+        tf.keras.layers.Dense(900, activation="relu"),
+        tf.keras.layers.Dropout(0.5),
+
+        # Add an output layer with output units for all 10 digits
+        tf.keras.layers.Dense(NUM_CATEGORIES, activation="softmax")
+    ])
+
+    # Train neural network
+    model.compile(
+        optimizer="adam",
+        loss="categorical_crossentropy",
+        metrics=["accuracy"]
+    )
+
+    return model
 
 
 if __name__ == "__main__":
