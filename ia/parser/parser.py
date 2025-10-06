@@ -1,6 +1,9 @@
 import nltk
 import sys
 
+nltk.download('punkt_tab')
+
+
 TERMINALS = """
 Adj -> "country" | "dreadful" | "enigmatical" | "little" | "moist" | "red"
 Adv -> "down" | "here" | "never"
@@ -34,25 +37,26 @@ def main():
         s = input("Sentence: ")
 
     # Convert input into list of words
-    s = preprocess(s)
+    se = preprocess(s)
 
-    # Attempt to parse sentence
-    try:
-        trees = list(parser.parse(s))
-    except ValueError as e:
-        print(e)
-        return
-    if not trees:
-        print("Could not parse sentence.")
-        return
-
-    # Print each tree with noun phrase chunks
-    for tree in trees:
-        tree.pretty_print()
-
-        print("Noun Phrase Chunks")
-        for np in np_chunk(tree):
-            print(" ".join(np.flatten()))
+    print(se)
+    # # Attempt to parse sentence
+    # try:
+    #     trees = list(parser.parse(s))
+    # except ValueError as e:
+    #     print(e)
+    #     return
+    # if not trees:
+    #     print("Could not parse sentence.")
+    #     return
+    #
+    # # Print each tree with noun phrase chunks
+    # for tree in trees:
+    #     tree.pretty_print()
+    #
+    #     print("Noun Phrase Chunks")
+    #     for np in np_chunk(tree):
+    #         print(" ".join(np.flatten()))
 
 
 def preprocess(sentence):
@@ -62,7 +66,14 @@ def preprocess(sentence):
     and removing any word that does not contain at least one alphabetic
     character.
     """
-    raise NotImplementedError
+    valid_chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+    filtered_words = []
+    for word in nltk.word_tokenize(sentence, language="english"):
+        word_lower = word.lower()
+        if any(char in word_lower for char in valid_chars):
+            filtered_words.append(word_lower)
+
+    return filtered_words
 
 
 def np_chunk(tree):
