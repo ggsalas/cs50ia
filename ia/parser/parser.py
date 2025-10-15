@@ -7,18 +7,41 @@ nltk.download('punkt_tab')
 TERMINALS = """
 Adj -> "country" | "dreadful" | "enigmatical" | "little" | "moist" | "red"
 Adv -> "down" | "here" | "never"
+
 Conj -> "and" | "until"
+
 Det -> "a" | "an" | "his" | "my" | "the"
+
 N -> "armchair" | "companion" | "day" | "door" | "hand" | "he" | "himself"
 N -> "holmes" | "home" | "i" | "mess" | "paint" | "palm" | "pipe" | "she"
 N -> "smile" | "thursday" | "walk" | "we" | "word"
+
 P -> "at" | "before" | "in" | "of" | "on" | "to"
+
 V -> "arrived" | "came" | "chuckled" | "had" | "lit" | "said" | "sat"
 V -> "smiled" | "tell" | "were"
 """
 
 NONTERMINALS = """
-S -> N V
+S -> NP VP
+S -> NP VP NP
+S -> NP VP NP NP
+S -> NP VP NP NP VP
+S -> VP NP
+S -> VP NP NP
+S -> S Conj S
+
+NP -> Adj Adj Adj N
+NP -> Adj Adj N
+NP -> Adj N
+NP -> N | Det NP
+NP -> NP P | P NP | P NP P NP
+NP -> NP Adv
+
+
+VP -> V | Adv V | V Adv
+VP -> Det Adj V
+VP -> VP P | P VP
 """
 
 grammar = nltk.CFG.fromstring(NONTERMINALS + TERMINALS)
@@ -39,24 +62,23 @@ def main():
     # Convert input into list of words
     se = preprocess(s)
 
-    print(se)
-    # # Attempt to parse sentence
-    # try:
-    #     trees = list(parser.parse(s))
-    # except ValueError as e:
-    #     print(e)
-    #     return
-    # if not trees:
-    #     print("Could not parse sentence.")
-    #     return
-    #
-    # # Print each tree with noun phrase chunks
-    # for tree in trees:
-    #     tree.pretty_print()
-    #
-    #     print("Noun Phrase Chunks")
-    #     for np in np_chunk(tree):
-    #         print(" ".join(np.flatten()))
+    # Attempt to parse sentence
+    try:
+        trees = list(parser.parse(se))
+    except ValueError as e:
+        print(e)
+        return
+    if not trees:
+        print("Could not parse sentence: ", s)
+        return
+
+    # Print each tree with noun phrase chunks
+    for tree in trees:
+        tree.pretty_print()
+
+        print("Noun Phrase Chunks")
+        for np in np_chunk(tree):
+            print(" ".join(np.flatten()))
 
 
 def preprocess(sentence):
@@ -83,7 +105,15 @@ def np_chunk(tree):
     whose label is "NP" that does not itself contain any other
     noun phrases as subtrees.
     """
-    raise NotImplementedError
+    chunks = []
+
+    subtrees = tree.subtrees(lambda t: t.label() == 'NP')
+    for st in subtrees:
+        np_count = len([st.label() for st in st.subtrees(lambda t: t.label() == 'NP')])
+        if np_count == 1:
+            chunks.append(st)
+
+    return chunks
 
 
 if __name__ == "__main__":
