@@ -38,7 +38,6 @@ NP -> N | Det NP
 NP -> NP P | P NP | P NP P NP
 NP -> NP Adv
 
-
 VP -> V | Adv V | V Adv
 VP -> Det Adj V
 VP -> VP P | P VP
@@ -88,7 +87,8 @@ def preprocess(sentence):
     and removing any word that does not contain at least one alphabetic
     character.
     """
-    valid_chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+    valid_chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+                   'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
     filtered_words = []
     for word in nltk.word_tokenize(sentence, language="english"):
         word_lower = word.lower()
