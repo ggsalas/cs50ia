@@ -27,19 +27,18 @@ def main():
     if mask_token_index is None:
         sys.exit(f"Input must include mask token {tokenizer.mask_token}.")
 
-    print('- mask_token_index: ', mask_token_index)
-    # # Use model to process input
-    # model = TFBertForMaskedLM.from_pretrained(MODEL)
-    # result = model(**inputs, output_attentions=True)
-    #
-    # # Generate predictions
-    # mask_token_logits = result.logits[0, mask_token_index]
-    # top_tokens = tf.math.top_k(mask_token_logits, K).indices.numpy()
-    # for token in top_tokens:
-    #     print(text.replace(tokenizer.mask_token, tokenizer.decode([token])))
-    #
-    # # Visualize attentions
-    # visualize_attentions(inpus.tokens(), result.attentions)
+    # Use model to process input
+    model = TFBertForMaskedLM.from_pretrained(MODEL)
+    result = model(**inputs, output_attentions=True)
+
+    # Generate predictions
+    mask_token_logits = result.logits[0, mask_token_index]
+    top_tokens = tf.math.top_k(mask_token_logits, K).indices.numpy()
+    for token in top_tokens:
+        print(text.replace(tokenizer.mask_token, tokenizer.decode([token])))
+
+    # Visualize attentions
+    visualize_attentions(inputs.tokens(), result.attentions)
 
 
 def get_mask_token_index(mask_token_id, inputs):
@@ -61,9 +60,10 @@ def get_color_for_attention_score(attention_score):
     Return a tuple of three integers representing a shade of gray for the
     given `attention_score`. Each value should be in the range [0, 255].
     """
-    # TODO: Implement this function
-    raise NotImplementedError
+    v= round(attention_score.numpy() * 255)
+    val = max(0, min(255, v))
 
+    return (val, val, val)
 
 
 def visualize_attentions(tokens, attentions):
@@ -76,13 +76,14 @@ def visualize_attentions(tokens, attentions):
     include both the layer number (starting count from 1) and head number
     (starting count from 1).
     """
-    # TODO: Update this function to produce diagrams for all layers and heads.
-    generate_diagram(
-        1,
-        1,
-        tokens,
-        attentions[0][0][0]
-    )
+    for i, attention in enumerate(attentions):
+        for k, head in enumerate(attention):
+            generate_diagram(
+                i + 1,
+                k + 1,
+                tokens,
+                attention[0][k]
+            )
 
 
 def generate_diagram(layer_number, head_number, tokens, attention_weights):
