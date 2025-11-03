@@ -17,8 +17,7 @@ PIXELS_PER_WORD = 200
 
 
 def main():
-    # text = input("Text: ")
-    text = '[MASK] moved slowly across the floor .'
+    text = input("Text: ")
 
     # Tokenize input
     tokenizer = AutoTokenizer.from_pretrained(MODEL)
@@ -50,7 +49,6 @@ def get_mask_token_index(mask_token_id, inputs):
     first_mask_token_index = mask_tokens_indexes[0, 1]
 
     if first_mask_token_index:
-        # TODO: check if I need to substract 1 to consider the first special token [CLS]
         return first_mask_token_index.numpy()
     return None
 
