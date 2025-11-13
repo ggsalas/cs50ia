@@ -1,0 +1,7 @@
+[MASTER]
+# Extension packages to whitelist (C extensions that pylint can't introspect)
+extension-pkg-whitelist=cv2,tensorflow
+
+[TYPECHECK]
+# Members that are generated dynamically and can't be detected by pylint
+generated-members=cv2.*,tensorflow.*,tf.*
