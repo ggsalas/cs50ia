@@ -1,20 +1,25 @@
-import { useState, useRef, DragEvent, ChangeEvent } from 'react';
-import './ImageUploader.css';
+import { useState, useRef, type DragEvent, type ChangeEvent } from "react";
+import "./ImageUploader.css";
 
 interface ImageUploaderProps {
   onImageSelect: (image: HTMLImageElement) => void;
   disabled?: boolean;
+  clearCB: () => void;
 }
 
-export function ImageUploader({ onImageSelect, disabled = false }: ImageUploaderProps) {
+export function ImageUploader({
+  onImageSelect,
+  disabled,
+  clearCB,
+}: ImageUploaderProps) {
   const [preview, setPreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
 
   const handleFile = (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
+    if (!file.type.startsWith("image/")) {
+      alert("Please select an image file");
       return;
     }
 
@@ -74,15 +79,18 @@ export function ImageUploader({ onImageSelect, disabled = false }: ImageUploader
   const handleClear = () => {
     setPreview(null);
     imageRef.current = null;
+
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
+
+    clearCB();
   };
 
   return (
     <div className="image-uploader">
       <div
-        className={`upload-area ${isDragging ? 'dragging' : ''} ${disabled ? 'disabled' : ''}`}
+        className={`upload-area ${isDragging ? "dragging" : ""} ${disabled ? "disabled" : ""}`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -114,6 +122,7 @@ export function ImageUploader({ onImageSelect, disabled = false }: ImageUploader
             <p className="upload-hint">PNG, JPG, PPM (max 10MB)</p>
           </div>
         )}
+
         <input
           ref={fileInputRef}
           type="file"
@@ -125,7 +134,11 @@ export function ImageUploader({ onImageSelect, disabled = false }: ImageUploader
       </div>
 
       {preview && (
-        <button onClick={handleClear} className="clear-button" disabled={disabled}>
+        <button
+          onClick={handleClear}
+          className="clear-button"
+          disabled={disabled}
+        >
           Clear Image
         </button>
       )}

@@ -1,73 +1,51 @@
-# React + TypeScript + Vite
+# Keras to TensorFlow.js Conversion Example
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is a **practical example** of converting a TensorFlow Keras model to run in the browser using TensorFlow.js.
 
-Currently, two official plugins are available:
+## About the Model
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+**Traffic Sign Classifier** - A convolutional neural network trained on the GTSRB dataset to recognize 43 different types of traffic signs.
 
-## React Compiler
+- **Task:** Image classification (traffic signs)
+- **Dataset:** GTSRB (German Traffic Sign Recognition Benchmark)
+- **Input:** 30×30 RGB images
+- **Output:** 43 traffic sign categories (speed limits, stop, yield, etc.)
+- **Architecture:** CNN with Conv2D, MaxPooling, Dense layers
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Converting Keras to TensorFlow.js
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+# From project root
+python src/convert-to-js/manual_convert.py
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+**What it does:**
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+1. Loads the Keras model (`model1.keras`)
+2. Extracts weights with proper TensorFlow.js naming
+3. Converts to browser-compatible format
+4. Outputs `model.json` + binary weight files
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Why Custom Script?
+
+Official `tensorflowjs_converter` has compatibility issues with modern environments (Python 3.13+, Keras 3, NumPy 2.x). This script handles the conversion manually.
+
+## Using in Browser
+
+```javascript
+import * as tf from "@tensorflow/tfjs";
+
+// Load converted model
+const model = await tf.loadLayersModel("/model/model.json");
+
+// Classify image
+const tensor = tf.browser
+  .fromPixels(imageElement)
+  .resizeBilinear([30, 30])
+  .expandDims(0);
+const predictions = await model.predict(tensor);
 ```
+
+---
+
+This demonstrates the full workflow: **Train in Python → Convert → Deploy in Browser**

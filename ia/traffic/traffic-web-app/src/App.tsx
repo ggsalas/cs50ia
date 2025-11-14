@@ -61,6 +61,7 @@ function App() {
         <ImageUploader
           onImageSelect={handleImageSelect}
           disabled={!isModelLoaded || isClassifying}
+          clearCB={() => setResult(null)}
         />
 
         <PredictionResult result={result} isLoading={isClassifying} />
