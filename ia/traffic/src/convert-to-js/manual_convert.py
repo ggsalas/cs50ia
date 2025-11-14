@@ -1,5 +1,6 @@
 """
 Manual conversion script that bypasses tensorflowjs CLI compatibility issues.
+Uses proper TensorFlow.js weight naming conventions.
 """
 
 import tensorflow as tf
@@ -10,7 +11,7 @@ import numpy as np
 
 
 def save_weights_to_json(model, output_dir):
-    """Manually save model weights in TensorFlow.js format."""
+    """Manually save model weights in TensorFlow.js format with correct naming."""
 
     os.makedirs(output_dir, exist_ok=True)
 
@@ -20,14 +21,27 @@ def save_weights_to_json(model, output_dir):
 
     for layer in model.layers:
         layer_weights = layer.get_weights()
+        layer_name = layer.name
+
+        # Skip layers without weights
+        if len(layer_weights) == 0:
+            continue
+
+        # For each weight in the layer (typically kernel and bias)
         for i, w in enumerate(layer_weights):
             weights.append(w)
+
+            # Use proper TensorFlow.js naming convention
+            # kernel (weights) = 0, bias = 1
+            if i == 0:
+                weight_name = f"{layer_name}/kernel"
+            elif i == 1:
+                weight_name = f"{layer_name}/bias"
+            else:
+                weight_name = f"{layer_name}/weight_{i}"
+
             weight_specs.append(
-                {
-                    "name": f"{layer.name}/weight_{i}",
-                    "shape": list(w.shape),
-                    "dtype": str(w.dtype),
-                }
+                {"name": weight_name, "shape": list(w.shape), "dtype": "float32"}
             )
 
     # Save weights as binary
@@ -40,8 +54,8 @@ def save_weights_to_json(model, output_dir):
     # Create model topology
     model_json = {
         "format": "layers-model",
-        "generatedBy": "manual-converter",
-        "convertedBy": "TensorFlow.js Converter v1.0.0",
+        "generatedBy": "keras-manual-converter",
+        "convertedBy": "TensorFlow.js Converter v4.0.0",
         "modelTopology": json.loads(model.to_json()),
         "weightsManifest": [
             {"paths": ["group1-shard1of1.bin"], "weights": weight_specs}
@@ -77,33 +91,8 @@ def convert_model(keras_path, output_path):
     print(f"   Output directory: {output_path}")
 
     try:
-        # Try using the official API first (might work despite import issues)
-        try:
-            # Monkey-patch to fix tensorflow_hub issue
-            import sys
-
-            if "tensorflow_hub" in sys.modules:
-                del sys.modules["tensorflow_hub"]
-
-            # Temporarily mock tensorflow_hub to bypass the import
-            import importlib
-            import types
-
-            mock_hub = types.ModuleType("tensorflow_hub")
-            sys.modules["tensorflow_hub"] = mock_hub
-
-            import tensorflowjs as tfjs
-
-            tfjs.converters.save_keras_model(model, output_path)
-            print("✅ Conversion successful (using official API)!")
-
-        except Exception as e:
-            print(f"   Official API failed: {e}")
-            print("   Trying manual conversion...")
-
-            # Fall back to manual conversion
-            save_weights_to_json(model, output_path)
-            print("✅ Conversion successful (using manual method)!")
+        save_weights_to_json(model, output_path)
+        print("✅ Conversion successful (using manual method)!")
 
         # Show output files
         print(f"\n3. Model files created in {output_path}:")

@@ -1,7 +1,7 @@
 {
   "format": "layers-model",
-  "generatedBy": "manual-converter",
-  "convertedBy": "TensorFlow.js Converter v1.0.0",
+  "generatedBy": "keras-manual-converter",
+  "convertedBy": "TensorFlow.js Converter v4.0.0",
   "modelTopology": {
     "module": "keras",
     "class_name": "Sequential",
@@ -21,16 +21,16 @@
           "module": "keras.layers",
           "class_name": "InputLayer",
           "config": {
-            "batch_shape": [
+            "dtype": "float32",
+            "sparse": false,
+            "ragged": false,
+            "name": "input_layer",
+            "batchInputShape": [
               null,
               30,
               30,
               3
-            ],
-            "dtype": "float32",
-            "sparse": false,
-            "ragged": false,
-            "name": "input_layer"
+            ]
           },
           "registered_name": null
         },
@@ -275,6 +275,28 @@
       ]
     },
     "compile_config": {
+      "optimizer": {
+        "module": "keras.optimizers",
+        "class_name": "Adam",
+        "config": {
+          "name": "adam",
+          "learning_rate": 0.0010000000474974513,
+          "weight_decay": null,
+          "clipnorm": null,
+          "global_clipnorm": null,
+          "clipvalue": null,
+          "use_ema": false,
+          "ema_momentum": 0.99,
+          "ema_overwrite_frequency": null,
+          "loss_scale_factor": null,
+          "gradient_accumulation_steps": null,
+          "beta_1": 0.9,
+          "beta_2": 0.999,
+          "epsilon": 1e-07,
+          "amsgrad": false
+        },
+        "registered_name": null
+      },
       "loss": "categorical_crossentropy",
       "loss_weights": null,
       "metrics": [
@@ -293,7 +315,7 @@
       ],
       "weights": [
         {
-          "name": "conv2d/weight_0",
+          "name": "conv2d/kernel",
           "shape": [
             3,
             3,
@@ -303,14 +325,14 @@
           "dtype": "float32"
         },
         {
-          "name": "conv2d/weight_1",
+          "name": "conv2d/bias",
           "shape": [
             32
           ],
           "dtype": "float32"
         },
         {
-          "name": "dense/weight_0",
+          "name": "dense/kernel",
           "shape": [
             2592,
             900
@@ -318,14 +340,14 @@
           "dtype": "float32"
         },
         {
-          "name": "dense/weight_1",
+          "name": "dense/bias",
           "shape": [
             900
           ],
           "dtype": "float32"
         },
         {
-          "name": "dense_1/weight_0",
+          "name": "dense_1/kernel",
           "shape": [
             900,
             43
@@ -333,7 +355,7 @@
           "dtype": "float32"
         },
         {
-          "name": "dense_1/weight_1",
+          "name": "dense_1/bias",
           "shape": [
             43
           ],

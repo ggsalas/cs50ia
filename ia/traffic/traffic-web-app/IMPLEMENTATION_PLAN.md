@@ -68,37 +68,38 @@ src/
   - NUM_CATEGORIES constant
 
 ### 3.2 Create Classifier Hook
-- [ ] Build `src/hooks/useTrafficSignClassifier.ts`:
-  - Load TensorFlow.js model from `/model/model.json`
-  - Image preprocessing (resize to 30x30)
-  - Prediction function
-  - Memory management (dispose tensors)
-  - Loading and error states
+- [x] Build `src/hooks/useTrafficSignClassifier.ts`: ✅
+  - Load TensorFlow.js model from `/model/model.json` ✅
+  - Image preprocessing (resize to 30x30) ✅
+  - Prediction function ✅
+  - Memory management (tf.tidy for automatic cleanup) ✅
+  - Loading and error states ✅
 
 ### 3.3 Build UI Components
 
 #### 3.3.1 ImageUploader Component
-- [ ] Create `src/components/ImageUploader.tsx`:
-  - File input (accept images)
-  - Drag & drop support
-  - Image preview
-  - Clear/reset functionality
+- [x] Create `src/components/ImageUploader.tsx`: ✅
+  - File input (accept images) ✅
+  - Drag & drop support ✅
+  - Image preview ✅
+  - Clear/reset functionality ✅
 
 #### 3.3.2 PredictionResult Component
-- [ ] Create `src/components/PredictionResult.tsx`:
-  - Display top prediction with confidence %
-  - Show top 3 predictions
-  - Visual confidence indicators
-  - Category labels
+- [x] Create `src/components/PredictionResult.tsx`: ✅
+  - Display top prediction with confidence % ✅
+  - Show top 3 predictions ✅
+  - Visual confidence indicators (progress bars) ✅
+  - Category labels ✅
+  - Loading state ✅
 
 #### 3.3.3 Main App Component
-- [ ] Update `src/App.tsx`:
-  - Main layout
-  - Integrate ImageUploader
-  - Integrate PredictionResult
-  - Handle classification flow
-  - Loading states
-  - Error handling
+- [x] Update `src/App.tsx`: ✅
+  - Main layout ✅
+  - Integrate ImageUploader ✅
+  - Integrate PredictionResult ✅
+  - Handle classification flow ✅
+  - Loading states (model + classification) ✅
+  - Error handling ✅
 
 ---
 

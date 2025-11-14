@@ -1,4 +1,4 @@
-export interface PredictionResult {
+export type PredictionResult = {
   predictedClass: number;
   category: string;
   confidence: number;
@@ -6,10 +6,10 @@ export interface PredictionResult {
     category: string;
     confidence: number;
   }>;
-}
+};
 
-export interface ClassifierState {
+export type ClassifierState = {
   isLoading: boolean;
   isModelLoaded: boolean;
   error: string | null;
-}
+};
